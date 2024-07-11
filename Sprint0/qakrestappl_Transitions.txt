@@ -1,0 +1,9 @@
+{"actor":"waste_incinerator", "msgType":"dispatch", "curstate":"state_init", "nextstate":"state_idle", "msgId":"start"}
+{"actor":"waste_incinerator", "msgType":"dispatch", "curstate":"state_idle", "nextstate":"state_control_Ash", "msgId":"infoRP"}
+{"actor":"waste_incinerator", "msgType":"dispatch", "curstate":"state_wait_Ash", "nextstate":"state_pick_RP", "msgId":"removed"}
+{"actor":"oprobot", "msgType":"dispatch", "curstate":"state_idle", "nextstate":"state_home", "msgId":"goHome"}
+{"actor":"wastestorage", "msgType":"dispatch", "curstate":"readWeight", "nextstate":"readWeight", "msgId":"doread"}
+{"actor":"incinerator", "msgType":"dispatch", "curstate":"state_idle", "nextstate":"state_burn", "msgId":"burn"}
+{"actor":"warningdevice", "msgType":"dispatch", "curstate":"state_idle", "nextstate":"state_blink", "msgId":"ledBlink"}
+{"actor":"warningdevice", "msgType":"dispatch", "curstate":"state_idle", "nextstate":"state_ledOn", "msgId":"ledOn"}
+{"actor":"incineratorservicestatusgui", "msgType":"dispatch", "curstate":"state_idle", "nextstate":"state_handle_update", "msgId":"updategui"}

@@ -1,0 +1,492 @@
+System progetto24
+/*  
+ * ========================================
+ *  progetto24 , sprint0
+ * ========================================
+*/ 
+
+
+//MESSAGES AND EVENTS
+
+// Test -> Waste_incinerator
+Dispatch start:	start("")
+
+// WasteIncenerator -> Inceneretor
+Dispatch burn:	burnrequest("")
+
+						
+//incecìnerator -> WasteIncenerator 
+//Reply burningYes:		burningYes("")
+//Reply burningNo:		burningNo("")
+Event signal: signal("") //il segnale spegne anche il led
+Dispatch ledOn: ledOn("")
+
+// WasteIncenerator  -> WasteStorage
+//Request empty:	emptyrequest("")
+						
+//WasteStorage -> WasteIncenerator 
+//Reply emptyYes:		emptyYes("")
+//Reply emptyNo:		emptyNo("")
+Dispatch infoRP : infoRP(N)
+Dispatch doread: doread(N)
+
+
+// WasteIncenerator  -> MonitoringDevice(raspberry)
+Request full:	fullrequest("")
+						
+//MonitoringDevice -> WasteIncenerator  
+Reply fullYes:		fullYes("") for full
+Reply fullNo:		fullNo("") for full
+Dispatch removed: removed("")
+
+//WasteIncenerator -> OpRobot
+Request goPickRP: goPickRP("")
+Request goBurnin: goBurnin("")
+Dispatch goHome: goHome("")
+Request goHomeAsh: goHomeAsh("")
+Request goBurnout: goBurnout("")
+Request goDepositAsh: goDepositAsh("")
+
+//OpRobot -> WasteIncinerator
+
+Reply finished:		finished("")
+
+
+//OpRobot -> basicrobot
+Request  doplan     : doplan( PATH, STEPTIME )
+Reply doplandone  : doplandone( ARG ) for doplan
+Reply doplanfailed  : doplanfailed( ARG ) for doplan
+
+//monitoringdevice -> warningdevice
+
+Dispatch ledBlink: ledBlink("")
+
+
+//  -> WasteServiceStatusGUI
+Dispatch updategui: 	updategui(
+							RPstate, 
+							ashState, 
+							InceneratorState, 
+							OpPosition
+							
+						)
+						
+						
+						
+// CONTEXTS ===================================================================
+Context ctx_waste_incinerator	ip [host="localhost" port=11800]
+Context ctx_monitor				ip [host="localhost" port=11801]
+Context ctx_monitoringdevice	ip [host="localhost" port=11802]
+Context ctx_basicrobot      	ip [host="localhost" port=11810]
+//Context ctx_oprobot     		ip [host="localhost" port=11813]
+Context ctx_basicrobot      	ip [host="localhost" port=11810]
+//Context ctx_waste_storage     	ip [host="localhost" port=11814]
+
+
+// ACTORS =====================================================================
+ExternalQActor basicrobot context ctx_basicrobot
+
+
+// ACTORS for ctx_waste_incinerator ------------------------------------------------
+QActor waste_incinerator context ctx_waste_incinerator {
+	
+	State state_init initial {
+		
+		
+		observeResource wastestorage msgid infoRP
+	
+	
+	}
+	
+	//TO_DO: GUI UPDATES FROM STATES
+	
+	Transition t0	whenMsg start	-> state_idle
+	
+	State state_idle {
+		println("[WasteIncinerator] Idle...")
+		// wait for messages...
+	}
+	Transition t0 whenMsg infoRP	-> state_control_Ash
+	
+	State state_control_Ash {
+		
+		println("[WasteIncinerator] RP is waiting in the waste storage")
+		request monitoringdevice -m full : fullRequest("_")
+	}
+	
+	Transition t1 whenReply fullYes	-> state_wait_Ash
+				  whenReply fullNo	-> state_pick_RP
+				  
+	State state_wait_Ash {
+		println("[WasteIncinerator] RP is waiting in the waste storage, but the ash storage is full")
+		println("[WasteIncinerator] waiting...")
+		
+	}
+	
+	Transition t1 whenMsg removed	-> state_pick_RP
+	
+	State state_pick_RP {
+		println("[WasteIncinerator] starting the robot")
+		request oprobot -m  goPickRP: goPickRP("_")
+	}
+	
+	Transition t1 whenReply finished	-> state_go_burnin
+	
+	State state_go_burnin{
+		delay 3000 //simulate the action of pickup an RP
+		println("[WasteIncinerator] goBurnin")
+		request oprobot -m  goBurnin: goBurnin("_")
+	}
+	
+	Transition t1 whenReply finished	-> state_start_incinerator
+	
+	State state_start_incinerator{
+		delay 3000 //deposit an RP
+		println("[WasteIncinerator] starting the Incinerator")
+		forward incinerator -m  burn: burnrequest("_")
+		forward oprobot -m  goHome: goHome("_")
+		println("[WasteIncinerator] waiting for the incinerator to stop")
+	}
+	
+	Transition t1 whenEvent signal -> state_go_burnout
+	
+	State state_go_burnout {
+		
+		println("[WasteIncinerator] going to the burnout port")
+		request oprobot -m  goBurnout: goBurnout("_")
+	}
+	
+	Transition t1 whenReply finished	-> state_go_deposit
+	
+	State state_go_deposit{
+		delay 3000 //picking up the ashes
+		println("[WasteIncinerator] going to the ash deposit")
+		request oprobot -m  goDepositAsh: goDepositAsh("_")
+	}
+	
+	Transition t1 whenReply finished	-> state_go_home
+	
+	State state_go_home{
+		delay 3000 //depositing the ashes
+		println("[WasteIncinerator] finished the process")
+		request oprobot -m  goHomeAsh: goHomeAsh("_")
+	
+	}
+	
+	
+	
+ 	Transition t1 whenReply finished	-> state_idle
+	//FORSE AGGIUNGERE UN ALTRO STATO PER GESTIRE IL CASO DI REMOVED MENTRE IL ROBOT TORNA
+}
+
+
+
+QActor oprobot context ctx_waste_incinerator {
+	State state_init initial {
+		println("[opRobot] HOME")
+		// wait for messages...
+	}
+	
+	Goto state_idle
+	
+	State state_idle{
+		println("[opRobot] Idle...")
+		// wait for messages...
+	}
+	
+	Transition t0   whenRequest goPickRP	-> state_RP
+					whenRequest goBurnin	-> state_burnin
+					whenMsg goHome	-> state_home
+					whenRequest goBurnout -> state_burnout
+					whenRequest goDepositAsh -> state_deposit
+					whenRequest goHomeAsh -> state_home_ash
+					
+	State state_RP{
+		//MOVING THE ROBOT
+		//TO_DO MOVING THE ROBOT AND INTERACT WITH BASICROBOT24
+		replyTo goPickRP with finished: finished("")
+		forward incineratorservicestatusgui -m updategui: updategui("TODO")
+	}
+	
+	Goto state_idle
+	
+	State state_burnin{
+		//MOVING THE ROBOT
+		//TO_DO MOVING THE ROBOT AND INTERACT WITH BASICROBOT24
+		replyTo goBurnin with finished: finished("")
+		forward incineratorservicestatusgui -m updategui: updategui("TODO")
+	}
+	
+	Goto state_idle
+	
+	State state_home{
+		//MOVING THE ROBOT
+		//TO_DO MOVING THE ROBOT AND INTERACT WITH BASICROBOT24
+		forward incineratorservicestatusgui -m updategui: updategui("TODO")
+	}
+	
+	Goto state_idle
+	
+	State state_burnout{
+		//MOVING THE ROBOT
+		//TO_DO MOVING THE ROBOT AND INTERACT WITH BASICROBOT24
+		replyTo goBurnout with finished: finished("")
+		forward incineratorservicestatusgui -m updategui: updategui("TODO")
+	}
+	
+	Goto state_idle
+	
+	
+	
+	State state_deposit{
+		//MOVING THE ROBOT
+		//TO_DO MOVING THE ROBOT AND INTERACT WITH BASICROBOT24
+		replyTo goDepositAsh with finished: finished("")
+		forward incineratorservicestatusgui -m updategui: updategui("TODO")
+	}
+	
+	Goto state_idle
+	
+	State state_home_ash{
+		//MOVING THE ROBOT
+		//TO_DO MOVING THE ROBOT AND INTERACT WITH BASICROBOT24
+		replyTo goHomeAsh with finished: finished("")
+		forward incineratorservicestatusgui -m updategui: updategui("TODO")
+	}
+	
+	Goto state_idle
+					
+	//forward: state of the oprobot
+	
+}
+
+
+
+
+
+
+
+
+
+QActor wastestorage context ctx_waste_incinerator {
+	
+	[# 
+	var working = false
+    var weight = 0
+    var newWeight = 0
+    var RP = 0
+#]	
+	State s0 initial{
+		println("starting the wastestorage") 
+	}	
+	Goto startTheStorage
+ 	
+	State startTheStorage{
+	[#
+    	working = true		
+		#]
+	}
+	Goto readWeight
+	
+	State readWeight{
+		//TODO READ THE LIBRA WEIGHT
+		
+		if [# newWeight > Weight #] { 
+		    println("$RP deposited by external agents"   ) color yellow
+		    [# Weight = newWeight
+		       RP = Weight/50		
+		    	
+		    	
+		    #]
+			updateResource [#infoRP($RP)#]
+			forward incineratorservicestatusgui -m updategui: updategui("TODO") //state of the waste storage
+			
+		}
+		autodispatch doread : doread(1)
+	}
+	Transition t0 
+ 		whenMsg doread and [# working   #]   -> readWeight
+		
+}
+
+
+
+QActor incinerator context ctx_waste_incinerator {
+	State state_init initial {
+		println("starting the incinerator") 
+	}
+	
+	Goto state_idle
+	
+	State state_idle{
+		println("[incinerator] Idle...")
+		// wait for messages...
+	}
+	
+	Transition t0   whenMsg burn	-> state_burn
+	
+	State state_burn{
+		println("[incinerator] Burning...")
+		forward warningdevice -m ledOn: ledOn("_")
+		forward incineratorservicestatusgui -m updategui: updategui("TODO") //state of the incinerator
+		delay 10000 //BTIME
+		emit signal: signal("")
+		forward incineratorservicestatusgui -m updategui: updategui("TODO") //state of the incinerator
+		
+	}
+	
+	Goto state_idle
+	
+	
+}
+
+//CONTEXT MONITORING DEVICE (ON THE RASPB)
+						
+QActor monitoringdevice context ctx_monitoringdevice {
+	[# 	
+    var Distance = 0
+    var full = 0
+    var DLIMT = 3
+    var MAXD = 20
+	#]	
+	// DLIMT is the distance under the ash storage is considered full
+	//MAXD is the maximum distance between the sonar and the bottom of the container (storage empty)
+	// 0 is not full, 1 is full
+	State state_init initial {
+		println("starting the monitoring device (AshStorage)")
+		//TODO start the sonar (Python)
+	}
+	
+	Goto state_idle
+	
+	State state_idle {
+		println("[ashstorage] Idle...")
+		// wait for messages...
+		}
+	Transition t0	whenTime 5000		-> readsonardata
+					whenRequest full -> check_ash
+					
+	State readsonardata{
+		//TODO read the datas from the sonar
+		
+		
+		if [# Distance <= DLIMT #]{
+			[# full = 1 #]
+			forward warningdevice -m ledBlink: ledBlink("_")
+		}
+		if [# Distance == MAXD #]{
+			forward warningdevice -m ledBlink: ledBlink("_")
+			if [# full == 1 #]{
+				[# full = 0 #]
+				forward waste_incinerator -m removed: removed("0")
+			
+			}
+		}else {
+			
+			if [# full == 1 #]{
+				[# full = 0 #]
+				forward waste_incinerator -m removed: removed("0")
+			
+			}
+		}
+		
+		forward incineratorservicestatusgui -m updategui: updategui("TODO") //state of the ash
+		
+	}
+	
+	Goto state_idle
+	
+	//ALGORITMO PER LA GESTIONE DEL SEGNALE REMOVED
+	
+	
+	State check_ash{
+		if [# Distance <= DLIMT #]{
+			replyTo full with fullYes: fullYes("$Distance")
+		}else{
+			replyTo full with fullNo: fullNo("$Distance")
+		}
+	}
+	
+	Goto state_idle
+
+
+}
+
+
+
+
+QActor warningdevice context ctx_monitoringdevice {
+	State state_init initial {
+		println("starting the warnigDevice (LED)")
+		
+	}
+	
+	Goto state_idle
+	
+	State state_idle {
+		println("[LED] Idle...")
+		// wait for messages...
+		}
+		
+	Transition t0	whenMsg ledBlink		-> state_blink
+					whenMsg ledOn -> state_ledOn
+					whenEvent signal -> state_ledOff
+					
+	State state_blink{
+		//TODO activate the led (blink)
+	}
+	
+	Goto state_idle
+	
+	State state_ledOn{
+		//TODO turn on the led
+	}
+	Goto state_idle
+	
+	State state_ledOff{
+		//TODO turn off the led
+	}
+	Goto state_idle
+					
+					
+					
+}	
+
+
+
+// ACTORS for ctx_monitor -----------------------------------------------------
+/*
+ * Receives updates from waste service and 
+ */
+QActor incineratorservicestatusgui context ctx_monitor {
+	[#
+		
+		var opRobotPosition: HOME
+		var currentRP: Float = 0.0f
+		var currentAsh: Float = 0.0f
+		var incineratorStatus = off
+	#]
+	State state_init initial {
+		println("[IncineratorServiceStatusGUI] Initializing...")
+		
+		println("[WasteServiceStatusGUI] Initialization completed. Current state:")
+		println("opRobotPosition: $opRobotPosition")
+		println("currentRP: $currentRP")
+		println("currentAsh: $currentAsh ")
+		println("inineratorStatus: $incineratorStatus ")
+		
+	}
+	Goto state_idle
+	
+	State state_idle {
+		println("[IncineratorServiceStatusGUI] Waiting for updates...")
+		// wait for messages
+	}
+	Transition t0 	whenMsg updategui -> state_handle_update
+	
+	State state_handle_update {
+		// TO-DO: get message info and update state
+		
+	}
+	Goto state_idle
+}		
