@@ -321,16 +321,15 @@
 				<li>
 					<b>DDR Robot:</b> <br>
 					<ul>
-						<li>Il committente ha specificato che il software di controllo e' BasicRobot24</li>
+						<li>Il software di controllo specificato dal committente e' BasicRobot24</li>
 					</ul>
 				</li>
 				<li>
 					<b>BasicRobot24:</b> <br>
 					<ul>
-						<li>Riceve messaggi con coordinate</li>
-						<li>Muove il robot fisico o virtuale: ha un file di configurazione</li>
-						<li>Il software di controllo risponde ai seguenti messaggi: <a
-								href="./BasicRobot24.html#br24-messaggi">basicRobot24</a><br></li>
+						<li>Si occupa di muovere il robot fisico e virtuale</li>
+						<!--<li>Il software di controllo risponde ai seguenti messaggi: <a
+								href="./BasicRobot24.html#br24-messaggi">basicRobot24</a><br></li>-->
 					</ul>
 				</li>
 				<b>OpRobot</b>
@@ -353,37 +352,23 @@
 					<b>Inceneritore:</b> <br>
 					<ul>
 						<li>Brucia un rifiuto RP alla volta in  tempo BTIME, ricevuto tramite la porta di BURNIN</li>
-					
+						<li>Emette un segnale alla fine della bruciatura percepito da OpRobot e WIS</li>
 						
 					</ul>
 				</li>
 				<li>
-				<!--	<b>WIS:</b>
+					<b>ServiceStatusGUI:</b>
 					<ul>
-						<li>Direttore del sistema
-						</li>
-						<!-- 						<li> Legge gli input:
-							<ul>
-								<li> Riceve il segnale inceneritore</li>
-								<li>Riceve Segnali da waste in</li>
-								<li>Riceve Segnali da AshStorage
-								</li>
-							</ul>
-						</li>
-						<li>Interagisce mediante polling con WasteStorage e AshStorage al fine di gestire stato della
-							bilanicia e del sonar.</li>
-						<li>
-							Ha una Gui al suo interno per visualizzare lo stato del sistema.
-						</li>
-						<li>
-							Indirizza il robot.
-						</li>
+						<li>Mostra il numero di RP n WasteStorage</li>
+						<li>Indica il livello di capacità utilizzata in AshStorage</li>
+						<li>Stato dell'inceneritore (brucia o meno)</li>
+						<li>Posizione attuale e lavoro svolto dall'OpRobot</li>
 					</ul>
-					-->
+					
 
 					<b>Scale</b>
 					<ul>
-						<li>Misura il peso totale dei rifiuti presenti nel Waste Storage, autoinnescandosi attraverso il messaggio di "autodispatch".</li>
+						<li>Misura il peso totale dei rifiuti presenti nel Waste Storage.</li>
 					</ul>
 				</li>
 				
