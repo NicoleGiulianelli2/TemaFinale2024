@@ -341,13 +341,10 @@
 					<li>Quando WasteStorage non e' vuoto, AshStorage non  e' pieno e l'inceneritore non sta bruciando:
 						<ul>
 							<li>Riceve una request da WIS e si sposta alla porta WASTEIN per prelevare RP rifiuti</li>
-							<li>Si sposta
+							<li>Sempre dopo una request da parte di WIS si sposta nella porta di BURNIN e deposita i rifiuti</li>
+							<li>Attraverso una dispatch, da parte di WIS, torna nella posizione HOME, mentre l'inceneritore brucia i rifiuti</li>
+							<li>Sara' avvisato da WIS che l'inceneritore ha finito di bruciare, quindi si reca alla porta di BURNOUT e preleva le ceneri>/li>
 						</ul>
-					<li>Carica da WASTEIN gli RP e Scarica in BURNIN </li>
-					<li>Torna in HOME quando inceneritore è in fase di burn</li>
-					<li>Carica da BURNout e scarica in ASHOUT</li>
-					<li>Controllato da WIS</li>
-					<li>Controlla il DDR Robot Invia istruzioni al BasicRobot24</li>-->
 				</ul>
 				</li>
 				<li>
@@ -454,7 +451,7 @@
 			<img src="./michele.jpeg" alt="mic" width="15%" height="10%">
 		</div> <br>
 		<div>By Nicole Giulianelli email: nicole.giulianelli@studio.unibo.it
-			<img src="./nicole.jpg" alt="mbot" width="15%" height="15%">
+			<img src="./nicole.png" alt="mbot" width="15%" height="15%">
 		</div> <br>
 		
 		GIT repo: https://github.com/NicoleGiulianelli2/TemaFinale2024 <br>
