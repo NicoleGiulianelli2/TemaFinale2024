@@ -344,14 +344,16 @@
 							<li>Sempre dopo una request da parte di WIS si sposta nella porta di BURNIN e deposita i rifiuti</li>
 							<li>Attraverso una dispatch, da parte di WIS, torna nella posizione HOME, mentre l'inceneritore brucia i rifiuti</li>
 							<li>Sara' avvisato da WIS che l'inceneritore ha finito di bruciare, quindi si reca alla porta di BURNOUT e preleva le ceneri>/li>
+							<li>Sempre dopo una request da paret di WIS si dirige all'area di AshStorage e deposita le ceneri</li>
+							<li>Torna alla HOME</li>
 						</ul>
 				</ul>
 				</li>
 				<li>
 					<b>Inceneritore:</b> <br>
 					<ul>
-						<li>Attraverso la porta BURNIN riceve i rifiuti RP, che si occupera' di bruciare, uno alla volta.</li>
-						<li>Al termine dell'esecuzione emette un segnale che sarà percepito da OpRobot e WIS.</li>
+						<li>Brucia un rifiuto RP alla volta in  tempo BTIME, ricevuto tramite la porta di BURNIN</li>
+						<li>
 						
 					</ul>
 				</li>
@@ -381,27 +383,14 @@
 
 					<b>Scale</b>
 					<ul>
-						<li>Misura il peso totale dei rifiuti presenti nel Waste Storage.</li>
-						<li>Fornisce informazione sul peso degli RP attualmente contenuti in Waste Storage.</li>
-						<li>E' un entita' passiva, Interfaccia che espone i seguenti metodi:
-							<ul>
-								<li> GetValue(): restituisce il peso attuale.</li>
-								<li> GetRpNumber(): restituisce il numero di RP.</li>
-							</ul>
-						</li>
-						<code> public interface Scale { int GetValue(); int GetRpNumber(); } </code>
+						<li>Misura il peso totale dei rifiuti presenti nel Waste Storage, autoinnescandosi attraverso il messaggio di "autodispatch".</li>
 					</ul>
 				</li>
 				
 				<li>
 					<b>MonitoringDevice:</b> <br>
 					<ul>
-						<li>Controlla il Led <br>
-							Il Led puo' essere modellato dalla seguente interfaccia: <br>
-							<code> public interface Led { void TurnOn(); void TurnOff(); void Blink(); } </code>
-						</li>
-						<li>Controlla il Sonar</li>
-						<li>E' implementato nel Raspberry</li>
+						<li>E' composto da un Led e da un Sonar, utilizzati per comunicare con il WIS lo stato sia dell'inceneritore che del contenitore dell'AshStorage</li>
 					</ul>
 				</li>
 				</li>
