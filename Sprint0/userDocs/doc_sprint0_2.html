@@ -284,7 +284,7 @@
             <a href="./TemaFinale24.html">Richiesta del committente</a>
                 <br>
             </div>
-		<h2>Requisiti del Sistema</h2>
+		<!--<h2>Requisiti del Sistema</h2>-->
 		
 		<br>
 		<h2>Analisi dei Requisiti</h2>
@@ -395,7 +395,7 @@
             <p> Il documento del committente menziona solamente i messaggi inviati e ricevuti dall' Incinerator, senza pero' specificarne i particolari, come la semantica, che verranno affrontati nell'analisi del problema </p>
 			<div>
 			<h3> Architettura Logica del modello </h3>
-				<img src="../progetto24arch.png" width="50%" height="50%">
+				<img src="../sprintzero.png" width="50%" height="50%">
 			</div>
 			<br></br>
 			<div>
@@ -405,21 +405,31 @@
 			
 	<br>		
 	<h3>Test Plans:</h3>
-	Vengono svolti solamente test funzionali in questa prima parte:
+	<!--Vengono svolti solamente test funzionali in questa prima parte:-->
     <br>
-	<li>
-		<strong>Test Case:</strong><br>
-		<ol>
+		<strong>Test Case 1</strong><br>
+        <U> Precondizioni:</U>
+		
 			<li>Contenitori Scarichi</li>
-			<li>Incenirator si accende</li>
-			<li>Viene caricato RP in WasteStorage</li>
-			<li>Fine Esecuzione AshStorage non e' vuoto</li>
+			<li>Incenirator acceso</li>
+			<li>OpRobot in HOME</li>
+		
+        <U> Evento:</U>
+            <li>Viene caricato un RP in WASTESTORAGE</li>
 
-		</ol>
-		<strong>Aspettativa:</strong> WasteStorage e' vuoto, Ash Storage e' stato riempito, il robot ha effettuato il percorso.
-	</li>
-	
+		<U>Aspettativa:</U>
+            <li>WasteStorage e' vuoto, Ash Storage non e' vuoto, il robot ha effettuato il percorso e il led e' spento</li>
+        <br>
+        <strong>Test Case 2</strong><br>
+        <U> Precondizioni:</U>
+        <li>AshStorage vuoto</li>
 
+        <U>Aspettativa:</U>
+        <li>Il robot non si muove e il led lampeggia</li>
+    
+    <br>
+    <h3>Sviluppi Futuri:</h3>
+    <p><strong>SPRINT1:</strong> Analisi del problema per i componenti WIS, OpRobot e Incinerator; e sviluppo dei relativi test</p>
 
 	<!-- USEFUL
 <table style="width:100%" border="1">
