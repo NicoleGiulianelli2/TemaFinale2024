@@ -1,0 +1,102 @@
+System sprintzero
+
+//messaggi usati nel sistema
+
+Event start: start(x)
+Event endBurn: endBurn(x)
+
+Context ctxservicearea  ip [host="localhost" port=8001] 
+Context ctxmonitoringdevice  ip [host="localhost" port=8002]
+Context ctxservicegui  ip [host="localhost" port=8003]  
+
+//SERVICE AREA CONTEXT
+
+
+QActor wis context ctxservicearea
+	withobj d using "utils.Scale.create()"{ 
+	[#
+//		
+		var rp_status = 0;
+		var ash_status = 0;
+		var inc_status= false;
+	#]
+	
+	State s0 initial{
+		printCurrentMessage
+		delay 500
+	}
+	
+	Goto idle
+	
+	State idle {}
+	
+	Transition t0
+		whenEvent endBurn -> stopIncinerator
+	
+	State stopIncinerator{
+	}
+}
+
+
+QActor oprobot context ctxservicearea{ 
+	State home initial{
+		println("OpRobot in HOME...") color magenta 
+	}
+	Transition t0 whenEvent endBurn -> pickAsh
+	
+	State pickAsh{
+	}
+	Goto home
+}
+
+
+QActor incinerator context ctxservicearea{
+	State s0 initial{
+		println("incinerator ready...") color yellow
+	}
+		Transition t0  whenEvent start -> acceso
+	
+	State acceso {
+		println("incinerator up...") color red
+	}
+	
+	State start{
+		emit endBurn : burnEnd( stop )
+	}
+}
+
+
+
+//MONITORING DEVICE CONTEXT
+
+
+QActor monitoringdevice context ctxmonitoringdevice
+	withobj d using "utils.Sonar.create()"{ 
+	[#
+			var led = 0;
+    #]
+	State s0 initial{
+		println("monitoring device start...") color green
+	}
+	
+	State manageLed{}
+
+}
+
+
+//SERVICE GUI CONTEXT
+
+QActor servicegui context ctxservicegui{ 
+	[#
+			var ws_status = 0;
+			var ash_status = 0;
+			var inc_status= false;
+			var op_status= false;
+    #]
+	State s0 initial{
+		println("servicegui start...") color green
+	}
+	
+	State updategui{}
+
+}
